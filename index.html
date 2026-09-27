@@ -113,7 +113,8 @@ function shiftHTML(j,next=false){
 }
 async function load(){
   try{
-    const res=await fetch(CSV_URL,{cache:"no-store"});
+    const freshUrl=CSV_URL+"&_="+Date.now();
+    const res=await fetch(freshUrl,{cache:"no-store"});
     if(!res.ok) throw new Error("Kunne ikke hente data");
     const rows=parseCSV(await res.text());
     const hi=rows.findIndex(r=>r.map(x=>x.trim().toLowerCase()).includes("dato"));
