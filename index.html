@@ -102,7 +102,7 @@ function shiftHTML(j,next=false){
   if(Number.isFinite(needed) && needed>0){
     const missing=Math.max(needed-teamCount,0);
     coverage=missing>0
-      ? `<div class="coverage"><span class="coverage-pill coverage-count">${teamCount}/${needed} MALERE</span><span class="coverage-pill coverage-status open">MANGLER ${missing} ${missing===1?"MALER":"MALERE"}</span></div>`
+      ? `<div class="coverage"><span class="coverage-pill coverage-count">${teamCount}/${needed} MALERE</span><span class="coverage-pill coverage-status open">${missing} ${missing===1?"MALER":"MALERE"} MANGLER</span></div>`
       : `<div class="coverage"><span class="coverage-pill coverage-count">${teamCount}/${needed} MALERE</span><span class="coverage-pill coverage-status full">DÆKKET ✓</span></div>`;
   }
   return `<div class="shift${next?" next":""}${colored?" has-color":""}"${colorStyle(j.color)}>
