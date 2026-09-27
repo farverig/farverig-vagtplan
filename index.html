@@ -76,22 +76,23 @@ function teamChips(team){
   return (team||"").split(/[,;]+/).map(x=>x.trim()).filter(Boolean)
     .map(n=>`<span class="chip">${esc(n.toUpperCase())}</span>`).join("");
 }
-const JOB_COLORS={
-  pink:["#e6a6bb","#fbf0f4"], rosa:["#e6a6bb","#fbf0f4"],
-  gul:["#e3c75f","#fbf7df"], yellow:["#e3c75f","#fbf7df"],
-  grøn:["#8fb99c","#edf6ef"], green:["#8fb99c","#edf6ef"],
-  lilla:["#ad9ac9","#f3eff8"], purple:["#ad9ac9","#f3eff8"],
-  orange:["#dda06f","#faf0e8"],
-  blå:["#8eabc7","#edf3f8"], blue:["#8eabc7","#edf3f8"]
-};
+function normalizeHex(raw){
+  const s=(raw||"").trim();
+  const m=s.match(/^#?([0-9a-fA-F]{6})$/);
+  return m ? "#"+m[1].toUpperCase() : "";
+}
+function hexToTint(hex){
+  const h=hex.replace("#","");
+  const rgb=[0,2,4].map(i=>parseInt(h.slice(i,i+2),16));
+  return "rgba("+rgb[0]+","+rgb[1]+","+rgb[2]+",0.13)";
+}
 function colorStyle(raw){
-  const key=(raw||"").trim().toLowerCase();
-  const pair=JOB_COLORS[key];
-  return pair ? ` style="--job-color:${pair[0]};--job-tint:${pair[1]}"` : "";
+  const hex=normalizeHex(raw);
+  return hex ? ` style="--job-color:${hex};--job-tint:${hexToTint(hex)}"` : "";
 }
 function shiftHTML(j,next=false){
   const time=[j.from,j.to].filter(Boolean).join("–");
-  const colored=!!JOB_COLORS[(j.color||"").trim().toLowerCase()];
+  const colored=!!normalizeHex(j.color);
   return `<div class="shift${next?" next":""}${colored?" has-color":""}"${colorStyle(j.color)}>
     <div class="date-row"><div class="date">${fmtDate(j.date)}</div><div class="time">${esc(time)}</div></div>
     <div><div class="event">${esc(j.event||"Arrangement")}</div>${j.place?`<div class="place">${esc(j.place)}</div>`:""}</div>
