@@ -92,7 +92,7 @@ function colorStyle(raw){
 function shiftHTML(j,next=false){
   const time=[j.from,j.to].filter(Boolean).join("–");
   const colored=!!JOB_COLORS[(j.color||"").trim().toLowerCase()];
-  return `<div class="shift${next?" next":""}${colored?" has-color":""}"${colorStyle(j.color)}>`
+  return `<div class="shift${next?" next":""}${colored?" has-color":""}"${colorStyle(j.color)}>
     <div class="date-row"><div class="date">${fmtDate(j.date)}</div><div class="time">${esc(time)}</div></div>
     <div><div class="event">${esc(j.event||"Arrangement")}</div>${j.place?`<div class="place">${esc(j.place)}</div>`:""}</div>
     <div class="team">${teamChips(j.team)}</div>
