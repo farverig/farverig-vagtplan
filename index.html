@@ -40,7 +40,6 @@
 </main>
 <script>
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9T6mmtSda556vJDyOS4bHnUtq3xGlSzrhzjVRourD3Bs0EwFDaE7vXCga8gwbLSGsi7qEMam9KKkF/pub?gid=1374397423&single=true&output=csv";
-const COLORS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9T6mmtSda556vJDyOS4bHnUtq3xGlSzrhzjVRourD3Bs0EwFDaE7vXCga8gwbLSGsi7qEMam9KKkF/pub?gid=1661988783&single=true&output=csv";
 function parseCSV(text){
   const rows=[]; let row=[], cell="", quoted=false;
   for(let i=0;i<text.length;i++){
@@ -102,29 +101,16 @@ function shiftHTML(j,next=false){
 }
 async function load(){
   try{
-    const [res,colorRes]=await Promise.all([
-      fetch(CSV_URL,{cache:"no-store"}),
-      fetch(COLORS_URL,{cache:"no-store"})
-    ]);
+    const res=await fetch(CSV_URL,{cache:"no-store"});
     if(!res.ok) throw new Error("Kunne ikke hente data");
     const rows=parseCSV(await res.text());
-    const palette={};
-    if(colorRes.ok){
-      const colorRows=parseCSV(await colorRes.text());
-      colorRows.forEach(r=>{
-        const name=(r[0]||"").trim().toLowerCase();
-        const hex=normalizeHex(r[1]||"");
-        if(name && hex) palette[name]=hex;
-      });
-    }
     const hi=rows.findIndex(r=>r.map(x=>x.trim().toLowerCase()).includes("dato"));
     if(hi<0) throw new Error("Kunne ikke finde kolonneoverskrifterne i arket.");
     const headers=rows[hi].map(x=>x.trim().toLowerCase());
     const idx=n=>headers.indexOf(n);
     const jobs=rows.slice(hi+1).map(r=>({
       date:parseDate(r[idx("dato")]), from:r[idx("fra")]||"", to:r[idx("til")]||"",
-      event:r[idx("arrangement")]||"", place:r[idx("lokation")]||"", team:r[idx("team")]||"",
-      color:idx("farve")>=0 ? (palette[(r[idx("farve")]||"").trim().toLowerCase()] || r[idx("farve")] || "") : ""
+      event:r[idx("arrangement")]||"", place:r[idx("lokation")]||"", team:r[idx("team")]||"", color:idx("farve")>=0?(r[idx("farve")]||""):""
     })).filter(j=>j.date && (j.event||j.team));
     const now=new Date(); const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
     const upcoming=jobs.filter(j=>j.date>=today).sort((a,b)=>a.date-b.date);
