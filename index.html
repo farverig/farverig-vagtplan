@@ -11,6 +11,8 @@
 .top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:54px;gap:24px}.brand{font-size:14px;font-weight:800;letter-spacing:.14em}.title{font-size:42px;line-height:1;letter-spacing:-.04em;margin:8px 0 0;font-weight:650}.updated{font-size:12px;color:var(--muted);white-space:nowrap}
 .section{margin-top:44px}.section-head{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 14px;border-bottom:1px solid #cfcfcb}.section-head h2{font-size:15px;margin:0;text-transform:uppercase;letter-spacing:.09em}.section-head span{font-size:12px;color:var(--muted)}
 .labels,.shift{display:grid;grid-template-columns:210px minmax(280px,1fr) minmax(330px,.95fr);column-gap:30px}.labels{padding:18px 22px 9px;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#8b8b87;font-weight:700}.shift{background:var(--paper);padding:25px 22px;border-top:1px solid var(--line);align-items:center}.shift:first-of-type{border-top:none;border-radius:12px 12px 0 0}.shift:last-child{border-radius:0 0 12px 12px}.date{font-size:16px;font-weight:700}.time{font-size:14px;margin-top:5px;color:#555}.event{font-size:16px;font-weight:650}.place{font-size:13px;color:var(--muted);margin-top:5px}.team{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-start}.chip{background:var(--chip);border-radius:999px;padding:8px 11px;font-size:12px;font-weight:750;letter-spacing:.02em}
+.shift.has-color{position:relative;box-shadow:inset 4px 0 0 var(--job-color);background:linear-gradient(90deg,var(--job-tint) 0,var(--paper) 145px)}
+.shift.has-color .chip{background:var(--job-tint)}
 .next{box-shadow:0 5px 22px rgba(0,0,0,.035);position:relative}.next:before{content:"NÆSTE";position:absolute;left:-9px;top:21px;transform:translateX(-100%);font-size:9px;letter-spacing:.12em;color:#777;font-weight:800}
 .past-wrap{opacity:.56}.past-wrap .shift{background:#fafafa}.past-wrap .chip{background:#ececea}.past-wrap .section-head{border-color:#ddd}.footer{margin-top:58px;font-size:11px;color:#999;text-align:center}
 @media(max-width:760px){.wrap{padding:34px 16px 60px}.top{margin-bottom:38px;align-items:flex-start}.title{font-size:34px}.updated{display:none}.labels{display:none}.shift{grid-template-columns:1fr;gap:16px;padding:20px 18px;margin-bottom:8px;border:0;border-radius:12px!important}.shift+.shift{border-top:0}.date-row{display:flex;justify-content:space-between;align-items:baseline;gap:16px}.time{margin:0}.event{font-size:15px}.team{padding-top:3px}.chip{font-size:11px;padding:7px 10px}.next:before{display:none}.section{margin-top:36px}.section-head{margin-bottom:10px}}
@@ -74,9 +76,23 @@ function teamChips(team){
   return (team||"").split(/[,;]+/).map(x=>x.trim()).filter(Boolean)
     .map(n=>`<span class="chip">${esc(n.toUpperCase())}</span>`).join("");
 }
+const JOB_COLORS={
+  pink:["#e6a6bb","#fbf0f4"], rosa:["#e6a6bb","#fbf0f4"],
+  gul:["#e3c75f","#fbf7df"], yellow:["#e3c75f","#fbf7df"],
+  grøn:["#8fb99c","#edf6ef"], green:["#8fb99c","#edf6ef"],
+  lilla:["#ad9ac9","#f3eff8"], purple:["#ad9ac9","#f3eff8"],
+  orange:["#dda06f","#faf0e8"],
+  blå:["#8eabc7","#edf3f8"], blue:["#8eabc7","#edf3f8"]
+};
+function colorStyle(raw){
+  const key=(raw||"").trim().toLowerCase();
+  const pair=JOB_COLORS[key];
+  return pair ? ` style="--job-color:${pair[0]};--job-tint:${pair[1]}"` : "";
+}
 function shiftHTML(j,next=false){
   const time=[j.from,j.to].filter(Boolean).join("–");
-  return `<div class="shift${next?" next":""}">
+  const colored=!!JOB_COLORS[(j.color||"").trim().toLowerCase()];
+  return `<div class="shift${next?" next":""}${colored?" has-color":""}"${colorStyle(j.color)}>`
     <div class="date-row"><div class="date">${fmtDate(j.date)}</div><div class="time">${esc(time)}</div></div>
     <div><div class="event">${esc(j.event||"Arrangement")}</div>${j.place?`<div class="place">${esc(j.place)}</div>`:""}</div>
     <div class="team">${teamChips(j.team)}</div>
@@ -93,7 +109,7 @@ async function load(){
     const idx=n=>headers.indexOf(n);
     const jobs=rows.slice(hi+1).map(r=>({
       date:parseDate(r[idx("dato")]), from:r[idx("fra")]||"", to:r[idx("til")]||"",
-      event:r[idx("arrangement")]||"", place:r[idx("lokation")]||"", team:r[idx("team")]||""
+      event:r[idx("arrangement")]||"", place:r[idx("lokation")]||"", team:r[idx("team")]||"", color:idx("farve")>=0?(r[idx("farve")]||""):""
     })).filter(j=>j.date && (j.event||j.team));
     const now=new Date(); const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
     const upcoming=jobs.filter(j=>j.date>=today).sort((a,b)=>a.date-b.date);
